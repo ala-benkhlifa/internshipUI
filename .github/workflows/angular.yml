@@ -1,0 +1,35 @@
+name: Build
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.16.1]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10.16.1
+      - run: npm install
+      - run: npm run build --if-present
+        env:
+          CI: true
+  sonar:
+    name: sonar
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: SonarCloud Scan
+        uses: mathrix-education/sonar-scanner@1.0.0
+        with:
+          version: 4.2.0.1873
+          typescript: true
+          scan: true
+          args: -Dsonar.organization=ala-benkhlifa -Dsonar.projectKey=internshipUI -Dsonar.sources=. -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
